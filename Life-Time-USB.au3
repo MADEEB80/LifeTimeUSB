@@ -2,6 +2,8 @@
 #include <GUIConstantsEx.au3>
 #include <WindowsConstants.au3>
 #include <File.au3>
+#include <MsgBoxConstants.au3>
+
 main()
 Func main()
    Global $hGui = GUICreate("Life-Time-USB 03036008080", 660, 500)
@@ -38,11 +40,15 @@ For $i = 0 To UBound($exesName_A) - 1
                 Exit
         EndSwitch
         ; scan all buttons to check if one was pressed
-	For $i = 0 To UBound($button_A) - 1
+		For $i = 0 To UBound($button_A) - 1
 		If $nMsg = $button_A[$i] Then
-			RunWait(@ComSpec & ' /c "'&@ScriptDir&'\Tools\7zip\7z.exe" x "UTZ.7z" "' & $exesName_A[$i] & '.exe" -p123 -o"%temp%\UTZtemp"', @ScriptDir, '', @SW_HIDE)
-			ShellExecuteWait(@TempDir&'\UTZTemp\'& $exesName_A[$i] & @CRLF)
-				   EndIf
-        Next
+			RunWait(@ScriptDir&'"\Tools\7z.exe" x -o"'&@TempDir&'\UTZTemp\" -y "/mt" "'&@ScriptDir&'\UTZ.7z" -p$O26Dg1^LVa! "'& $exesName_A[$i] & '"', '', @SW_MINIMIZE)
+			If Not @error Then
+				ShellExecute(@TempDir&'\UTZTemp\'& $exesName_A[$i], '')
+			Else
+				MsgBox($MB_SYSTEMMODAL, "Title", "This message box will timeout after 10 seconds or select the OK button.", 10)
+			EndIf
+EndIf
+		Next
     WEnd
 EndFunc   ;==>main
