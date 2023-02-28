@@ -1,0 +1,97 @@
+#include <ButtonConstants.au3>
+#include <File.au3>
+#include <MsgBoxConstants.au3>
+#include <FileConstants.au3>
+#include <GUIConstantsEx.au3>
+#include <WindowsConstants.au3>
+main()
+
+Func main()
+    Global $hGui = GUICreate("Life-Time-USB Mini-Tools 03036008080", 652, 510)
+    Global $hTab = GUICtrlCreateTab(7, 105, 640, 400)
+    GUICtrlCreateTabItem("Main Menu")
+CreateLogoAndLabel()
+; Set folder path to read icon files from
+    Local $folderPath =  @ScriptDir & '\UTZ'
+
+    ; Get all icon files in the folder and remove extension
+    Local $exesName_A = _FileListToArray($folderPath, "*.7z", 1)
+    For $i = 1 To $exesName_A[0]
+        $exesName_A[$i] = StringRegExpReplace($exesName_A[$i], "\.7z$", "")
+    Next
+
+    If $exesName_A[0] = 704 Then
+        Local $height = 40, $width = 125, $y = 0, $x = 0, $z = 1
+        Global $button_A[UBound($exesName_A)]
+
+        For $i = 1 To UBound($exesName_A) - 1
+            If ((8 + ($x + 1) * $width) > 635) Then
+                $y += 1
+                $x = 0
+            EndIf
+            If ($y = 9) Then
+                $hTab = GUICtrlCreateTabItem("Sub-Menu-" & $z)
+CreateLogoAndLabel()
+                $y = 0
+                $z += 1
+            EndIf
+            $button_A[$i] = GUICtrlCreateButton($exesName_A[$i], 10 + ($x * 2) + $x * $width, ($y * 2) + 125 + $y * $height, $width, $height, $BS_left)
+            GUICtrlSetImage(-1, $folderPath & '\' & $exesName_A[$i] & '.ico', '', 2)
+            $x += 1
+        Next
+
+        GUISetState(@SW_SHOW)
+
+        While 1
+            $nMsg = GUIGetMsg()
+            Switch $nMsg
+				Case $GUI_EVENT_CLOSE
+					DirRemove(@TempDir & '\UTZTemp',1)
+					    Exit
+            EndSwitch
+
+            ; scan all buttons to check if one was pressed
+            For $i = 1 To UBound($button_A) - 1
+                If $nMsg = $button_A[$i] Then
+                    ; Set the path to the extracted file
+                    $extractedFilePath = @TempDir & '\UTZTemp\' & $exesName_A[$i] & '.exe'
+
+                    ; Check if the file already exists in the temporary directory
+
+    If Not FileExists($extractedFilePath) Then
+        ; If the file doesn't exist, extract it from the archive
+        Local $cmd = @ComSpec & ' /c ""' & @ScriptDir & '\Tools\7zip\7z.exe" e "' & @ScriptDir & '\UTZ\' & $exesName_A[$i] & '.7z" -o' & @TempDir & '\UTZTemp -p123"'
+        RunWait($cmd, "", @SW_HIDE)
+    EndIf
+
+    ; Run the extracted file and wait for it to close
+    ShellExecuteWait($extractedFilePath, '')
+	 FileDelete(@TempDir & '\UTZTemp')
+    WinWaitClose("[CLASS:SunAwtFrame]", "", 10)
+
+    ; Delete the temporary directory
+    FileDelete(@TempDir & '\UTZTemp')
+
+	EndIf
+			Next
+		WEnd
+
+	Else
+	MsgBox($MB_OK, "Items Error", "Contact the vender 03036008080")
+	EndIf
+
+EndFunc   ;==>main
+
+Func CreateLogoAndLabel()
+	; Set the background color of the label to Lime
+	Local $HeadingBg = GUICtrlCreateLabel('', 0, 0, 664, 105)
+    GUICtrlSetBkColor($HeadingBg, '15201971')
+	Local $hLabel = GUICtrlCreateLabel("Welcome to UrduTechZone", 108, 2, 664, 105)
+	Local $hLabe2 = GUICtrlCreateLabel("One Step Solution To All Your Tech Problems ", 118, 50, 664, 75)
+	Local $hLabe3 = GUICtrlCreateLabel("+92 330 600 8080  +92 303 600 8080 ", 175, 78, 664, 75)
+	Local $hLogo = GUICtrlCreatePic( "logo.jpg", 0, 0, 105, 105)
+	; Set the font, size, and color of the label
+	GUICtrlSetFont($hLabel, 32, 800, 0, "Arial")
+	GUICtrlSetFont($hLabe2, 18, 800, 0, "Arial")
+	GUICtrlSetFont($hLabe3, 18, 800, 0, "Arial")
+	EndFunc
