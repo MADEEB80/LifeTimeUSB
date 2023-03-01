@@ -1,0 +1,193 @@
+#include <ButtonConstants.au3>
+#include <File.au3>
+#include <MsgBoxConstants.au3>
+#include <FileConstants.au3>
+#include <GUIConstantsEx.au3>
+#include <WindowsConstants.au3>
+
+main()
+Func main()
+
+	Global $hGui = GUICreate("Life-Time-USB Installer 03036008080", 652, 510)
+    Global $hTab = GUICtrlCreateTab(7, 105, 640, 400)
+	$button1 = GUICtrlCreateButton("UTZ Softwere", 10, 340, 100, 30)
+	$button2 = GUICtrlCreateButton("Mini tools", 100, 440, 100, 30)
+	CreateLogoAndLabel()
+	GUISetState()
+
+While GUIGetMsg() <> $GUI_EVENT_CLOSE
+    $nMsg = GUIGetMsg()
+		Switch $nMsg
+				Case $GUI_EVENT_CLOSE
+					    Exit
+			Case $button1
+				 Installer()
+				  Exit
+			Case $button2
+				Minitools()
+				 Exit
+            EndSwitch
+
+sleep(19)
+WEnd
+
+EndFunc ;...main
+
+Func Installer()
+    Global $hGui = GUICreate("Life-Time-USB Installer 03036008080", 652, 510)
+    Global $hTab = GUICtrlCreateTab(7, 105, 640, 400)
+
+    GUICtrlCreateTabItem("Installer-1")
+    CreateLogoAndLabel()
+    ; Set folder path to read subdirectories and zip files from
+    Local $folderPath = 'G:\U.T.Z Softwares'
+    ; Get all subdirectories in the folder
+    Local $subdirs = _FileListToArray($folderPath, "*", $FLTA_FOLDERS)
+    ; Sort subdirectories alphabetically
+    _ArraySort($subdirs)
+    If Not @error Then
+        Local $height = 40, $width = 173, $y = 0, $x = 0 ,$z = 1
+        For $i = 1 To UBound($subdirs) - 1
+            ; Create label for the subdirectory
+          ;  GUICtrlCreateLabel($subdirs[$i], 10, ($y * 2) + 125 + $y * $height, 150, 20)
+			$line = GUICtrlCreateLabel($subdirs[$i], 10, ($y * 2) + 125 + $y * $height + 10 , 110, 20)
+GUICtrlSetFont($line, 12, 800, 0, "Arial")
+GUICtrlSetBkColor($line, '15201971')
+
+
+
+            ; Get all zip files in the subdirectory and remove extension
+            Local $zipFiles = _FileListToArray($folderPath & '\' & $subdirs[$i], "*", $FLTA_FILES)
+            For $j = 1 To UBound($zipFiles) - 1
+                $zipFiles[$j] = StringRegExpReplace($zipFiles[$j], "\.zip$", "")
+                ; Create button for the zip file
+                GUICtrlCreateButton($zipFiles[$j], 120 + ($x * 2) + $x * $width, ($y * 2) + 125 + $y * $height, $width, $height, $BS_left)
+                GUICtrlSetImage(-1, 'UTZ\utz.ico', '', 2)
+                $x += 1
+				; If current Tab is full, move to next tab
+
+				If ($y * 2) + 125 + $y * $height >= 461 Then
+					$y = 0
+					$x = 0
+					$z += 1
+					$hTab = GUICtrlCreateTabItem("Installer-" & $z)
+
+				CreateLogoAndLabel()
+
+					EndIf
+				; If current row is full, move to next row
+                If $x >= 3 Then
+                    $y += 1
+                    $x = 0
+				EndIf
+            Next
+            ; If current column is not full, move to next row
+            If $x > 0 Then
+                $y += 1
+                $x = 0
+            EndIf
+        Next
+        GUISetState(@SW_SHOW)
+        While 1
+            $nMsg = GUIGetMsg()
+            Switch $nMsg
+                Case $GUI_EVENT_CLOSE
+                    Exit
+            EndSwitch
+        WEnd
+    Else
+        MsgBox($MB_OK, "Items Error", "Contact the vender 03036008080")
+    EndIf
+EndFunc   ;==>Installer
+
+Func Minitools()
+    Global $hGui = GUICreate("Life-Time-USB Mini-Tools 03036008080", 652, 510)
+    Global $hTab = GUICtrlCreateTab(7, 105, 640, 400)
+    GUICtrlCreateTabItem("Mini-Tools-1")
+CreateLogoAndLabel()
+; Set folder path to read icon files from
+    Local $folderPath =  @ScriptDir & '\UTZ'
+	Local $Temp = @TempDir & '\UTZTemp'
+    ; Get all icon files in the folder and remove extension
+    Local $exesName_A = _FileListToArray($folderPath, "*.7z", 1)
+    For $i = 1 To $exesName_A[0]
+        $exesName_A[$i] = StringRegExpReplace($exesName_A[$i], "\.7z$", "")
+    Next
+
+    If $exesName_A[0] <> 704 Then
+        Local $height = 40, $width = 125, $y = 0, $x = 0, $z = 1
+        Global $button_A[UBound($exesName_A)]
+
+        For $i = 1 To UBound($exesName_A) - 1
+            If ((8 + ($x + 1) * $width) > 635) Then
+                $y += 1
+                $x = 0
+            EndIf
+            If ($y = 9) Then
+                $hTab = GUICtrlCreateTabItem("Mini-Tools-" & $z)
+CreateLogoAndLabel()
+                $y = 0
+                $z += 1
+            EndIf
+            $button_A[$i] = GUICtrlCreateButton($exesName_A[$i], 10 + ($x * 2) + $x * $width, ($y * 2) + 125 + $y * $height, $width, $height, $BS_left)
+            $iconPath = $folderPath & '\' & $exesName_A[$i] & '.ico'
+			 If Not FileExists($iconPath) Then $iconPath = 'UTZ\utz.ico'
+			GUICtrlSetImage(-1,$iconPath, '', 2)
+            $x += 1
+        Next
+
+        GUISetState(@SW_SHOW)
+
+        While 1
+            $nMsg = GUIGetMsg()
+            Switch $nMsg
+				Case $GUI_EVENT_CLOSE
+					DirRemove($Temp,1)
+					    Exit
+            EndSwitch
+
+            ; scan all buttons to check if one was pressed
+            For $i = 1 To UBound($button_A) - 1
+                If $nMsg = $button_A[$i] Then
+                    ; Set the path to the extracted file
+                    $extractedFilePath = $Temp &'\' & $exesName_A[$i] & '.exe'
+
+                    ; Check if the file already exists in the temporary directory
+
+    If Not FileExists($extractedFilePath) Then
+        ; If the file doesn't exist, extract it from the archive
+        Local $cmd = @ComSpec & ' /c ""' & $folderPath & '\7z.exe" e "'  & $folderPath & '\' & $exesName_A[$i] & '.7z" -o' & $Temp & ' -p123"'
+        RunWait($cmd, "", @SW_HIDE)
+    EndIf
+
+    ; Run the extracted file and wait for it to close
+    ShellExecuteWait($extractedFilePath, '')
+	 FileDelete($Temp)
+    WinWaitClose("[CLASS:SunAwtFrame]", "", 10)
+
+    ; Delete the temporary directory
+    FileDelete($Temp)
+
+	EndIf
+			Next
+		WEnd
+
+	Else
+	MsgBox($MB_OK, "Items Error", "Contact the vender 03036008080")
+	EndIf
+
+EndFunc   ;==>Minitools
+
+Func CreateLogoAndLabel()
+	; Set the background color of the label to Lime
+	Local $HeadingBg = GUICtrlCreateLabel('', 0, 0, 664, 105)
+    GUICtrlSetBkColor($HeadingBg, '15201971')
+	Local $hLabel = GUICtrlCreateLabel("Welcome to UrduTechZone", 108, 2, 664, 105)
+	Local $hLabe2 = GUICtrlCreateLabel("One Step Solution To All Your Tech Problems ", 118, 50, 664, 75)
+	Local $hLabe3 = GUICtrlCreateLabel("+92 330 600 8080  +92 303 600 8080 ", 175, 78, 664, 75)
+	Local $hLogo = GUICtrlCreatePic( "UTZ\logo.jpg", 0, 0, 105, 105)
+	; Set the font, size, and color of the label
+	GUICtrlSetFont($hLabel, 32, 800, 0, "Arial")
+	GUICtrlSetFont($hLabe2, 18, 800, 0, "Arial")
+	GUICtrlSetFont($hLabe3, 18, 800, 0, "Arial")
+	EndFunc
